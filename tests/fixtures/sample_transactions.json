@@ -1,0 +1,61 @@
+{
+  "transactions": [
+    {
+      "from_account": "ACC_1001",
+      "to_account": "ACC_2001",
+      "amount": 5000.00,
+      "timestamp": "2024-01-15T10:30:00",
+      "is_fraud": 0
+    },
+    {
+      "from_account": "ACC_1001",
+      "to_account": "ACC_2002",
+      "amount": 4500.00,
+      "timestamp": "2024-01-15T10:31:00",
+      "is_fraud": 0
+    },
+    {
+      "from_account": "ACC_1001",
+      "to_account": "ACC_2003",
+      "amount": 5500.00,
+      "timestamp": "2024-01-15T10:32:00",
+      "is_fraud": 0
+    },
+    {
+      "from_account": "ACC_2001",
+      "to_account": "ACC_3001",
+      "amount": 5000.00,
+      "timestamp": "2024-01-15T10:35:00",
+      "is_fraud": 1
+    },
+    {
+      "from_account": "ACC_2002",
+      "to_account": "ACC_3001",
+      "amount": 4500.00,
+      "timestamp": "2024-01-15T10:36:00",
+      "is_fraud": 1
+    },
+    {
+      "from_account": "ACC_2003",
+      "to_account": "ACC_3001",
+      "amount": 5500.00,
+      "timestamp": "2024-01-15T10:37:00",
+      "is_fraud": 1
+    },
+    {
+      "from_account": "ACC_3001",
+      "to_account": "ACC_4001",
+      "amount": 15000.00,
+      "timestamp": "2024-01-15T10:40:00",
+      "is_fraud": 1
+    },
+    {
+      "from_account": "ACC_4001",
+      "to_account": "ACC_1001",
+      "amount": 14800.00,
+      "timestamp": "2024-01-15T10:45:00",
+      "is_fraud": 1
+    }
+  ],
+  "description": "Sample transactions with smurfing and round-tripping patterns"
+}
