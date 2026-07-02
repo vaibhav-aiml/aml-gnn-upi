@@ -5,7 +5,7 @@ Explainability module - Model interpretation and visualization
 from .gnn_explainer import GNNExplainer, GraphMaskExplainer
 from .visualize import ExplanationVisualizer, GraphVisualizer
 
-# Only import SHAP if available
+# Try to import SHAP silently
 try:
     from .shap_features import SHAPFeatureAnalyzer, FeatureAttribution
     __all__ = [
@@ -25,4 +25,4 @@ except ImportError:
         'ExplanationVisualizer',
         'GraphVisualizer'
     ]
-    print("⚠️ SHAP not available. Install with: pip install shap")
+    # No warning - silent fallback

@@ -1,6 +1,5 @@
 """
 Graph Attention Network (GAT) for fraud detection
-GAT learns which neighbors are most important for detecting fraud
 """
 import torch
 import torch.nn as nn
@@ -16,15 +15,19 @@ class GATFraudDetector(nn.Module):
         self.conv3 = GATConv(hidden_channels, out_channels, heads=1, dropout=dropout)
         
         self.dropout = dropout
+        self.bn1 = nn.BatchNorm1d(hidden_channels * heads)
+        self.bn2 = nn.BatchNorm1d(hidden_channels)
         
     def forward(self, x, edge_index):
         # First attention layer
         x = self.conv1(x, edge_index)
+        x = self.bn1(x)
         x = F.elu(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
         
         # Second attention layer
         x = self.conv2(x, edge_index)
+        x = self.bn2(x)
         x = F.elu(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
         
@@ -50,20 +53,29 @@ class MultiHeadGAT(nn.Module):
         super().__init__()
         
         self.convs = nn.ModuleList()
+        self.bns = nn.ModuleList()
+        
         self.convs.append(GATConv(in_channels, hidden_channels, heads=heads))
+        self.bns.append(nn.BatchNorm1d(hidden_channels * heads))
         
         for _ in range(num_layers - 2):
             self.convs.append(GATConv(hidden_channels * heads, hidden_channels, heads=heads))
+            self.bns.append(nn.BatchNorm1d(hidden_channels * heads))
         
         self.convs.append(GATConv(hidden_channels * heads, out_channels, heads=1))
+        self.bns.append(nn.BatchNorm1d(out_channels))
+        
+        self.num_layers = num_layers
         
     def forward(self, x, edge_index):
         for i, conv in enumerate(self.convs[:-1]):
             x = conv(x, edge_index)
+            x = self.bns[i](x)
             x = F.elu(x)
             x = F.dropout(x, p=0.3, training=self.training)
         
         x = self.convs[-1](x, edge_index)
+        x = self.bns[-1](x)
         return x
 
 if __name__ == "__main__":

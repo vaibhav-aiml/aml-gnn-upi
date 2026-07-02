@@ -99,25 +99,3 @@ class GNNTrainer:
         self.train_losses = checkpoint['train_losses']
         self.val_metrics = checkpoint['val_metrics']
         print(f"Model loaded from {path}")
-
-if __name__ == "__main__":
-    # Test trainer with dummy data
-    from torch_geometric.data import Data
-    
-    # Create dummy graph
-    num_nodes = 100
-    num_features = 9
-    
-    x = torch.randn(num_nodes, num_features)
-    edge_index = torch.randint(0, num_nodes, (2, 200))
-    y = torch.randint(0, 2, (num_nodes,))
-    
-    dummy_data = Data(x=x, edge_index=edge_index, y=y)
-    
-    # Test training
-    from graphsage import GraphSAGELight
-    model = GraphSAGELight(in_channels=9, hidden_channels=32, out_channels=2)
-    trainer = GNNTrainer(model)
-    
-    print("Testing trainer with dummy data...")
-    # trainer.train(dummy_data, epochs=5)  # Uncomment to test
