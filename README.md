@@ -132,3 +132,16 @@ aml-gnn-upi/
 ├── pyproject.toml           # Standard package definition
 └── requirements.txt         # Dependency manifest
 ```
+
+---
+
+## ⚡ Production Scalability & Architectural Trade-offs
+
+When discussing system scalability and real-time transaction scoring in production interviews, note the following design choices:
+
+1. **Dynamic Batch Ingestion vs. Inductive Sampling**:
+   - `ingest_batch_transactions()` dynamically updates the persistent graph dataframe when new `/predict` batches arrive, ensuring real-time GNN message passing over new edge additions.
+2. **Sliding Window Memory Bounding**:
+   - The service enforces a sliding window eviction policy (capping historical transactions at 10,000) to guarantee bounded memory usage and prevent latency degradation.
+3. **Enterprise Production Scaling Strategy**:
+   - At high-throughput enterprise scale (millions of UPI transactions/sec), full graph reconstruction is replaced with PyG `NeighborLoader` micro-batch sampling or GraphSAGE inductive subgraph inference over incoming transaction batches.

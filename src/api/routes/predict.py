@@ -82,8 +82,16 @@ class GraphInferenceService:
             score = (hash(account_id) % 45) + 15.0
             return float(score)
 
-    def ingest_batch_transactions(self, transactions):
-        """Ingest new batch transactions into persistent graph structure and re-evaluate GNN model inference"""
+    def ingest_batch_transactions(self, transactions, max_history: int = 10000):
+        """
+        Ingest new batch transactions into persistent graph structure and re-evaluate GNN model inference.
+        
+        Production Scalability & Trade-offs:
+        1. Sliding Window Memory Eviction: Caps historical dataframe size to `max_history` (10,000 transactions)
+           to ensure bounded RAM usage and prevent O(N) latency degradation.
+        2. Production Alternative: High-throughput deployments replace full graph rebuilding with
+           PyG `NeighborLoader` micro-batch sampling or GraphSAGE inductive subgraph inference.
+        """
         import pandas as pd
         new_rows = []
         for tx in transactions:
@@ -102,6 +110,10 @@ class GraphInferenceService:
         if new_rows:
             new_df = pd.DataFrame(new_rows)
             self.df = pd.concat([self.df, new_df], ignore_index=True)
+            # Enforce sliding window eviction to prevent unbounded memory growth
+            if len(self.df) > max_history:
+                self.df = self.df.tail(max_history).reset_index(drop=True)
+                
             self.builder = TransactionGraphBuilder(self.df)
             self.pyg_graph = self.builder.build_graph()
             self.x = self.pyg_graph['account'].x
