@@ -1,0 +1,6 @@
+# Auto-normalize line endings across all text files in repo
+* text=auto
+
+# Preserve explicit LF line endings for shell scripts and notebooks
+*.sh text eol=lf
+*.ipynb text eol=lf

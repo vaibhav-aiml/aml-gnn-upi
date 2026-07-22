@@ -15,7 +15,7 @@ MODEL_DIR = BASE_DIR / "models_saved"
 for dir_path in [RAW_DATA_DIR, PROCESSED_DATA_DIR, MODEL_DIR]:
     dir_path.mkdir(parents=True, exist_ok=True)
 
-# Neo4j settings (DEV ONLY FALLBACK - specify NEO4J_PASSWORD env var for production)
+# Neo4j configuration settings (RESERVED - Optional external graph database sync)
 neo4j_uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
 neo4j_user = os.getenv("NEO4J_USER", "neo4j")
 neo4j_password = os.getenv("NEO4J_PASSWORD", "password123")  # DEV-ONLY FALLBACK - DO NOT USE IN PRODUCTION

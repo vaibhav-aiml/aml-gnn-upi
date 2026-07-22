@@ -82,8 +82,38 @@ class GraphInferenceService:
             score = (hash(account_id) % 45) + 15.0
             return float(score)
 
+    def ingest_batch_transactions(self, transactions):
+        """Ingest new batch transactions into persistent graph structure and re-evaluate GNN model inference"""
+        import pandas as pd
+        new_rows = []
+        for tx in transactions:
+            ts = tx.timestamp
+            new_rows.append({
+                'from_account': tx.from_account,
+                'to_account': tx.to_account,
+                'amount': tx.amount,
+                'timestamp': ts,
+                'is_fraud': 0,
+                'pattern_type': 'normal',
+                'hour': ts.hour if hasattr(ts, 'hour') else 12,
+                'day_of_week': ts.weekday() if hasattr(ts, 'weekday') else 0
+            })
+            
+        if new_rows:
+            new_df = pd.DataFrame(new_rows)
+            self.df = pd.concat([self.df, new_df], ignore_index=True)
+            self.builder = TransactionGraphBuilder(self.df)
+            self.pyg_graph = self.builder.build_graph()
+            self.x = self.pyg_graph['account'].x
+            self.edge_index = self.pyg_graph['account', 'transacts', 'account'].edge_index
+            self.account_id_to_idx = self.builder.account_id_map
+            self.run_graph_inference()
+
     def process_batch_prediction(self, request: BatchTransactionRequest) -> PredictionResponse:
-        """Process batch of transactions and trigger alerts for high risk accounts"""
+        """Process batch of transactions by updating graph context and running real GNN inference"""
+        if request.transactions:
+            self.ingest_batch_transactions(request.transactions)
+            
         accounts = set()
         for tx in request.transactions:
             accounts.add(tx.from_account)
