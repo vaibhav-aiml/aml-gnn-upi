@@ -23,19 +23,22 @@ class GraphVisualizationComponent:
         # Create plotly figure
         fig = go.Figure()
         
-        # Add edges
+        # Add edges in a single consolidated trace
+        edge_x, edge_y = [], []
         for edge in G.edges():
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
+            edge_x.extend([x0, x1, None])
+            edge_y.extend([y0, y1, None])
             
-            fig.add_trace(go.Scatter(
-                x=[x0, x1],
-                y=[y0, y1],
-                mode='lines',
-                line=dict(width=1, color='#cccccc'),
-                hoverinfo='none',
-                showlegend=False
-            ))
+        fig.add_trace(go.Scatter(
+            x=edge_x,
+            y=edge_y,
+            mode='lines',
+            line=dict(width=1, color='#cccccc'),
+            hoverinfo='none',
+            showlegend=False
+        ))
         
         # Add nodes
         node_x = []

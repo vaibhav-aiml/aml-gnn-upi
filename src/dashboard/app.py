@@ -43,8 +43,8 @@ if 'redis_available' not in st.session_state:
 
 @st.cache_resource
 def load_app_graph_data():
-    """Cache graph generation, network building, and model prediction"""
-    generator = SyntheticUPIDataGenerator(num_accounts=200, num_transactions=4000)
+    """Cache graph generation, network building, model prediction, and pattern detection"""
+    generator = SyntheticUPIDataGenerator(num_accounts=120, num_transactions=2000)
     df = generator.generate_dataset()
     builder = TransactionGraphBuilder(df)
     pyg_graph = builder.build_graph()
@@ -84,6 +84,10 @@ def load_app_graph_data():
     idx_to_account = {idx: acc for acc, idx in account_map.items()}
     account_risk_dict = {acc: float(node_risks[idx]) for acc, idx in account_map.items()}
     
+    # Pre-calculate graph patterns once
+    detector = PatternDetector(nx_graph)
+    patterns = detector.get_all_patterns()
+    
     # Create adjacency matrix for graph viz component
     adj_matrix = nx.to_numpy_array(nx_graph)
     
@@ -96,14 +100,14 @@ def load_app_graph_data():
         'node_risks': node_risks,
         'account_map': account_map,
         'idx_to_account': idx_to_account,
-        'account_risk_dict': account_risk_dict
+        'account_risk_dict': account_risk_dict,
+        'patterns': patterns
     }
 
-@st.cache_data
 def detect_app_patterns(_nx_graph):
-    """Cache pattern detection logic"""
-    detector = PatternDetector(_nx_graph)
-    return detector.get_all_patterns()
+    """Retrieve pre-calculated pattern detection dictionary"""
+    app_data = load_app_graph_data()
+    return app_data.get('patterns', {'smurfing': [], 'layering': [], 'round_tripping': []})
 
 @st.cache_data
 def load_comparison_metrics():
