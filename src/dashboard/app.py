@@ -3,6 +3,7 @@ Streamlit dashboard for AML visualization with Redis streaming, real model outpu
 """
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 import random
@@ -396,7 +397,7 @@ def page_live_alerts():
         high_cnt = len([a for a in alerts if a['Risk Score'] > 70])
         st.metric("High Risk (>70)", high_cnt)
     with col4:
-        avg_score = round(float(np.mean([a['Risk Score'] for a in alerts])), 1) if alerts else 0.0
+        avg_score = round(sum(a['Risk Score'] for a in alerts) / len(alerts), 1) if alerts else 0.0
         st.metric("Avg Risk Score", avg_score)
     
     st.markdown("---")
