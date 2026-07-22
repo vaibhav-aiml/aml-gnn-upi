@@ -306,11 +306,16 @@ def page_dashboard():
     high_risk_accounts = [acc for acc, r in account_risks.items() if r > 60]
     
     df_high_risk = df[df['from_account'].isin(high_risk_accounts) | df['to_account'].isin(high_risk_accounts)].head(15).copy()
+    if 'transaction_id' not in df_high_risk.columns:
+        df_high_risk['transaction_id'] = [f"TXN_{i+1:06d}" for i in range(len(df_high_risk))]
     df_high_risk['from_risk'] = df_high_risk['from_account'].map(account_risks).fillna(20.0).round(1)
     df_high_risk['to_risk'] = df_high_risk['to_account'].map(account_risks).fillna(20.0).round(1)
     
+    desired_cols = ['transaction_id', 'from_account', 'to_account', 'amount', 'from_risk', 'to_risk', 'is_fraud']
+    avail_cols = [c for c in desired_cols if c in df_high_risk.columns]
+    
     st.dataframe(
-        df_high_risk[['transaction_id', 'from_account', 'to_account', 'amount', 'from_risk', 'to_risk', 'is_fraud']],
+        df_high_risk[avail_cols],
         use_container_width=True,
         column_config={
             'amount': st.column_config.NumberColumn("Amount (₹)", format="₹%.2f"),

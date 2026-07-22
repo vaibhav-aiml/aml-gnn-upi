@@ -130,7 +130,8 @@ class SyntheticUPIDataGenerator:
         df = pd.DataFrame(transactions)
         df = df.sample(frac=1).reset_index(drop=True)  # Shuffle
         
-        # Add features
+        # Add transaction_id and features
+        df['transaction_id'] = [f"TXN_{i+1:06d}" for i in range(len(df))]
         df['hour'] = pd.to_datetime(df['timestamp']).dt.hour
         df['day_of_week'] = pd.to_datetime(df['timestamp']).dt.dayofweek
         
