@@ -11,6 +11,9 @@ class TransactionGraphBuilder:
     def __init__(self, transaction_df):
         self.df = transaction_df
         self.account_encoder = LabelEncoder()
+        all_accounts = pd.concat([self.df['from_account'], self.df['to_account']]).unique()
+        self.account_encoder.fit(all_accounts)
+        self.account_id_map = {acc: idx for idx, acc in enumerate(self.account_encoder.classes_)}
         
     def build_graph(self):
         """Build heterogeneous graph from transactions"""
@@ -18,7 +21,7 @@ class TransactionGraphBuilder:
         
         # Encode accounts as node IDs
         all_accounts = pd.concat([self.df['from_account'], self.df['to_account']]).unique()
-        account_ids = self.account_encoder.fit_transform(all_accounts)
+        account_ids = self.account_encoder.transform(all_accounts)
         
         # Create node features (account-based features)
         node_features = self._create_node_features()

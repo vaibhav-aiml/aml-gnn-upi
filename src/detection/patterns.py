@@ -86,32 +86,28 @@ class PatternDetector:
     def detect_round_tripping(self, min_hops=3, max_hops=6):
         """
         Detect round-tripping: Money returns to source
-        Optimized: Only check cycles of limited length
+        Optimized: Compute global cycles once outside node loop
         """
         round_trips = []
-        
-        # Only check first 50 nodes
-        for node in list(self.graph.nodes())[:50]:
-            try:
-                # Find simple cycles with length limit
-                cycles = list(nx.simple_cycles(self.graph, length_bound=max_hops))
-                for cycle in cycles:
-                    if len(cycle) >= min_hops and node == cycle[0]:
-                        # Check if amounts are similar
-                        if self._check_cycle_amounts_fast(cycle):
-                            pattern = {
-                                'source': cycle[0],
-                                'cycle': cycle,
-                                'length': len(cycle),
-                                'pattern_type': 'round_tripping'
-                            }
-                            round_trips.append(pattern)
-                        
-                        if len(round_trips) >= 20:
-                            break
-            except:
-                continue
-        
+        try:
+            cycles = list(nx.simple_cycles(self.graph, length_bound=max_hops))
+        except Exception:
+            return round_trips
+
+        nodes_to_check = set(list(self.graph.nodes())[:50])
+        for cycle in cycles:
+            if len(cycle) >= min_hops and cycle[0] in nodes_to_check:
+                if self._check_cycle_amounts_fast(cycle):
+                    pattern = {
+                        'source': cycle[0],
+                        'cycle': cycle,
+                        'length': len(cycle),
+                        'pattern_type': 'round_tripping'
+                    }
+                    round_trips.append(pattern)
+                    if len(round_trips) >= 20:
+                        break
+
         return round_trips
     
     def _check_cycle_amounts_fast(self, cycle):

@@ -64,6 +64,22 @@ class TestAPI:
         assert "important_features" in data
         assert len(data["important_features"]) == 3
         
+    def test_predict_determinism(self):
+        """Test prediction determinism and alerts tracking"""
+        response1 = client.post("/api/v1/predict/account/UPI_000001")
+        response2 = client.post("/api/v1/predict/account/UPI_000001")
+        assert response1.status_code == 200
+        assert response2.status_code == 200
+        assert response1.json()["risk_score"] == response2.json()["risk_score"]
+        
+    def test_alerts_endpoint(self):
+        """Test alerts listing endpoint"""
+        response = client.get("/api/v1/alerts")
+        assert response.status_code == 200
+        data = response.json()
+        assert "alerts" in data
+        assert "summary" in data
+
     def test_live_endpoint(self):
         """Test liveness probe"""
         response = client.get("/api/v1/live")

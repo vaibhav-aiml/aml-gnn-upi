@@ -35,7 +35,7 @@ class PredictionResponse(BaseModel):
     batch_id: str
     predictions: List[RiskScoreResponse]
     flagged_accounts: List[str]
-    summary: Dict[str, int]
+    summary: Dict[str, float]
 
 class ExplanationRequest(BaseModel):
     account_id: str

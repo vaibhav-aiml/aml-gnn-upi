@@ -13,7 +13,7 @@ from pathlib import Path
 from .graphsage import GraphSAGELight, GraphSAGEFraudDetector
 from .gat import GATFraudDetector
 from .heterognn import SimpleHeteroGNN
-from .trainer import GNNTrainer
+from .trainer import GNNTrainer, add_stratified_split
 
 class ModelComparison:
     def __init__(self, data, device='cpu'):
@@ -24,8 +24,10 @@ class ModelComparison:
         self.train_times = {}
         
     def train_all_models(self, epochs=30, lr=0.01):
-        """Train all three models and compare"""
-        
+        """Train all three models and compare using stratified node split"""
+        if not hasattr(self.data, 'train_mask') or self.data.train_mask is None:
+            self.data = add_stratified_split(self.data)
+
         models_config = {
             'GraphSAGE': {
                 'class': GraphSAGELight,
@@ -56,11 +58,11 @@ class ModelComparison:
         }
         
         print("=" * 60)
-        print("🚀 TRAINING ALL MODELS FOR COMPARISON")
+        print("TRAINING ALL MODELS FOR COMPARISON")
         print("=" * 60)
         
         for model_name, config in models_config.items():
-            print(f"\n📊 Training {model_name}...")
+            print(f"\n[INFO] Training {model_name}...")
             
             # Initialize model
             model = config['class'](**config['params'])
@@ -76,8 +78,8 @@ class ModelComparison:
             )
             train_time = time.time() - start_time
             
-            # Evaluate
-            eval_metrics = trainer.evaluate(self.data)
+            # Evaluate on test_mask for honest generalization performance
+            eval_metrics = trainer.evaluate(self.data, mask=self.data.test_mask)
             
             # Store results
             self.models[model_name] = {
@@ -93,12 +95,13 @@ class ModelComparison:
                 'epochs': epochs
             }
             
-            print(f"✅ {model_name} trained in {train_time:.2f}s")
-            print(f"   Accuracy: {eval_metrics['accuracy']:.4f}")
-            print(f"   F1-Score: {eval_metrics['f1_score']:.4f}")
+            print(f"[OK] {model_name} trained in {train_time:.2f}s")
+            print(f"   Test Accuracy: {eval_metrics['accuracy']:.4f}")
+            print(f"   Test F1-Score: {eval_metrics['f1_score']:.4f}")
+            print(f"   Test AUC-ROC:  {eval_metrics['auc_roc']:.4f}")
         
         print("\n" + "=" * 60)
-        print("✅ All models trained!")
+        print("[OK] All models trained!")
         print("=" * 60)
         
         return self.results
@@ -115,21 +118,36 @@ class ModelComparison:
         return best_model_name, self.models[best_model_name]['model']
     
     def save_all_models(self, save_dir="models_saved/comparison/"):
-        """Save all trained models"""
+        """Save all trained models and comparison metrics dataframe"""
         save_dir = Path(save_dir)
         save_dir.mkdir(parents=True, exist_ok=True)
         
         for model_name, model_data in self.models.items():
             path = save_dir / f"{model_name}_model.pt"
             model_data['trainer'].save_model(str(path))
-            print(f"✅ Saved {model_name} to {path}")
+            print(f"[OK] Saved {model_name} to {path}")
+            
+        df = self.get_comparison_dataframe()
+        df.to_csv(save_dir / "comparison_results.csv", index=False)
+        print(f"[OK] Saved comparison dataframe to {save_dir / 'comparison_results.csv'}")
     
     def load_all_models(self, load_dir="models_saved/comparison/"):
         """Load all trained models"""
         load_dir = Path(load_dir)
         
-        for model_name in self.models.keys():
+        for model_name in ['GraphSAGE', 'GAT', 'Hetero-GNN']:
             path = load_dir / f"{model_name}_model.pt"
             if path.exists():
-                self.models[model_name]['trainer'].load_model(str(path))
-                print(f"✅ Loaded {model_name} from {path}")
+                if model_name not in self.models:
+                    self.models[model_name] = {}
+                # Create dummy model and trainer to load state
+                if model_name == 'GraphSAGE':
+                    model = GraphSAGELight(self.data.x.shape[1], 64, 2)
+                elif model_name == 'GAT':
+                    model = GATFraudDetector(self.data.x.shape[1], 32, 2, heads=2, dropout=0.3)
+                else:
+                    model = SimpleHeteroGNN(self.data.x.shape[1], 64, 2)
+                trainer = GNNTrainer(model, self.device)
+                trainer.load_model(str(path))
+                self.models[model_name] = {'model': model, 'trainer': trainer}
+                print(f"✅ Loaded {model_name} from {path}")

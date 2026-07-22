@@ -1,12 +1,8 @@
 """
 Run real-time transaction streaming
 """
-import sys
 import threading
 import time
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent))
 
 from src.streaming.redis_stream import RedisStreamClient
 from src.streaming.generator import TransactionGenerator

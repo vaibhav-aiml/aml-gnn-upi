@@ -1,11 +1,6 @@
 """
 Complete pipeline runner for AML GNN project
 """
-import sys
-from pathlib import Path
-
-# Add project root to path
-sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data.synthetic_data_generator import SyntheticUPIDataGenerator
 from src.data.graph_builder import TransactionGraphBuilder
@@ -15,14 +10,23 @@ from src.detection.patterns import PatternDetector
 import torch
 import networkx as nx
 
+import argparse
+
 def main():
+    parser = argparse.ArgumentParser(description="AML GNN Pipeline Runner")
+    parser.add_argument("--fast", action="store_true", help="Run fast pipeline demo with reduced graph size")
+    args = parser.parse_args()
+
+    num_accounts = 200 if args.fast else 500
+    num_tx = 5000 if args.fast else 10000
+
     print("=" * 60)
-    print("AML GNN Project Pipeline")
+    print(f"AML GNN Project Pipeline {'(Fast Mode)' if args.fast else ''}")
     print("=" * 60)
     
     # Step 1: Generate synthetic data
     print("\n[Step 1] Generating synthetic transaction data...")
-    generator = SyntheticUPIDataGenerator(num_accounts=500, num_transactions=10000)
+    generator = SyntheticUPIDataGenerator(num_accounts=num_accounts, num_transactions=num_tx)
     df = generator.generate_dataset()
     print(f"Generated {len(df)} transactions")
     

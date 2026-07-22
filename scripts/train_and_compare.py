@@ -1,10 +1,6 @@
 """
 Train and compare all GNN models
 """
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data.synthetic_data_generator import SyntheticUPIDataGenerator
 from src.data.graph_builder import TransactionGraphBuilder
@@ -13,7 +9,7 @@ import torch
 
 def main():
     print("=" * 60)
-    print("📊 MULTI-MODEL COMPARISON")
+    print("MULTI-MODEL COMPARISON")
     print("GraphSAGE vs GAT vs Hetero-GNN")
     print("=" * 60)
     
@@ -45,7 +41,7 @@ def main():
     
     # Step 4: Show comparison
     print("\n" + "=" * 60)
-    print("📊 COMPARISON RESULTS")
+    print("COMPARISON RESULTS")
     print("=" * 60)
     
     df_results = comparer.get_comparison_dataframe()
@@ -57,10 +53,10 @@ def main():
     
     # Step 6: Show best model
     best_model, _ = comparer.get_best_model()
-    print(f"\n🏆 Best Model: {best_model}")
+    print(f"\nBest Model: {best_model}")
     
     print("\n" + "=" * 60)
-    print("✅ Comparison complete!")
+    print("Comparison complete!")
     print("=" * 60)
     
     return comparer, df_results

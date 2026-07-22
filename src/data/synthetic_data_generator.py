@@ -34,11 +34,14 @@ class SyntheticUPIDataGenerator:
         transactions = []
         for _ in range(num_patterns):
             source = random.choice(self.accounts)
-            num_splits = random.randint(20, 50)
+            avail_recipients = [a for a in self.accounts if a != source]
+            num_splits = min(random.randint(20, 50), len(avail_recipients))
+            if num_splits == 0:
+                continue
             total_amount = random.uniform(50000, 200000)
             split_amount = total_amount / num_splits
             
-            recipients = random.sample([a for a in self.accounts if a != source], num_splits)
+            recipients = random.sample(avail_recipients, num_splits)
             for recipient in recipients:
                 transactions.append({
                     'from_account': source,
@@ -54,7 +57,9 @@ class SyntheticUPIDataGenerator:
         """Generate layering: money through chain of accounts"""
         transactions = []
         for _ in range(num_patterns):
-            chain_length = random.randint(5, 10)
+            chain_length = min(random.randint(5, 10), len(self.accounts))
+            if chain_length < 2:
+                continue
             chain = random.sample(self.accounts, chain_length)
             amount = random.uniform(10000, 100000)
             

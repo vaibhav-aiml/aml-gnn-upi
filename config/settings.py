@@ -15,21 +15,21 @@ MODEL_DIR = BASE_DIR / "models_saved"
 for dir_path in [RAW_DATA_DIR, PROCESSED_DATA_DIR, MODEL_DIR]:
     dir_path.mkdir(parents=True, exist_ok=True)
 
-# Neo4j settings (can be overridden by environment variables)
+# Neo4j settings (DEV ONLY FALLBACK - specify NEO4J_PASSWORD env var for production)
 neo4j_uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
 neo4j_user = os.getenv("NEO4J_USER", "neo4j")
-neo4j_password = os.getenv("NEO4J_PASSWORD", "password123")
+neo4j_password = os.getenv("NEO4J_PASSWORD", "password123")  # DEV-ONLY FALLBACK - DO NOT USE IN PRODUCTION
 
 # Model hyperparameters
 MODEL_CONFIG = {
     "graphsage": {
-        "in_channels": 128,
+        "in_channels": 9,  # Matches 9 node features from TransactionGraphBuilder
         "hidden_channels": 256,
         "out_channels": 2,
         "num_layers": 3,
     },
     "gat": {
-        "in_channels": 128,
+        "in_channels": 9,  # Matches 9 node features from TransactionGraphBuilder
         "hidden_channels": 256,
         "out_channels": 2,
         "heads": 4,

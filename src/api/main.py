@@ -4,10 +4,6 @@ FastAPI main application for AML service
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import predict, explain, health
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent.parent))
 
 app = FastAPI(
     title="AML Fraud Detection API",

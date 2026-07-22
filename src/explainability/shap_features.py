@@ -11,7 +11,7 @@ try:
     SHAP_AVAILABLE = True
 except ImportError:
     SHAP_AVAILABLE = False
-    print("⚠️ SHAP not installed. Install with: pip install shap")
+    print("[WARN] SHAP not installed. Optional package.")
 
 class SHAPFeatureAnalyzer:
     def __init__(self, model, background_data):

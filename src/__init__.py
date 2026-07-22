@@ -7,8 +7,7 @@ __version__ = "1.0.0"
 __author__ = "AML Team"
 __description__ = "GNN-based fraud detection for UPI transactions"
 
-# Export main components
-from src import data, models, detection, api, dashboard, storage, explainability
+from src import data, models, detection, api, dashboard, explainability
 
 __all__ = [
     'data',
@@ -16,6 +15,5 @@ __all__ = [
     'detection',
     'api',
     'dashboard',
-    'storage',
     'explainability'
 ]

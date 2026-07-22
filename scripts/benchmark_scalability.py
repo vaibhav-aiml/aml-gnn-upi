@@ -5,10 +5,6 @@ import time
 import torch
 import pandas as pd
 import numpy as np
-from pathlib import Path
-import sys
-
-sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data.synthetic_data_generator import SyntheticUPIDataGenerator
 from src.data.graph_builder import TransactionGraphBuilder
