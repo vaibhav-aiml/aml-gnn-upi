@@ -118,13 +118,22 @@ class PatternDetector:
             to_node = cycle[(i+1) % len(cycle)]
             edge_data = self.graph.get_edge_data(from_node, to_node)
             if edge_data:
-                amount = list(edge_data.values())[0].get('amount', 0) if edge_data else 0
+                if 'amount' in edge_data:
+                    amount = edge_data['amount']
+                elif isinstance(edge_data, dict) and len(edge_data) > 0:
+                    first_val = list(edge_data.values())[0]
+                    if isinstance(first_val, dict):
+                        amount = first_val.get('amount', 0)
+                    else:
+                        amount = first_val
+                else:
+                    amount = 0
                 amounts.append(amount)
         
         if len(amounts) < 2:
             return False
         
-        mean_amount = np.mean(amounts)
+        mean_amount = float(np.mean(amounts))
         if mean_amount == 0:
             return False
             
