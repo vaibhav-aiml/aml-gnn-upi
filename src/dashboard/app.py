@@ -84,9 +84,12 @@ def load_app_graph_data():
     idx_to_account = {idx: acc for acc, idx in account_map.items()}
     account_risk_dict = {acc: float(node_risks[idx]) for acc, idx in account_map.items()}
     
-    # Pre-calculate graph patterns once
-    detector = PatternDetector(nx_graph)
-    patterns = detector.get_all_patterns()
+    # Pre-calculate graph patterns once with defensive fallback
+    try:
+        detector = PatternDetector(nx_graph)
+        patterns = detector.get_all_patterns()
+    except Exception:
+        patterns = {'smurfing': [], 'layering': [], 'round_tripping': []}
     
     # Create adjacency matrix for graph viz component
     adj_matrix = nx.to_numpy_array(nx_graph)

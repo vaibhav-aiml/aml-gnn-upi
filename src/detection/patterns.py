@@ -96,52 +96,58 @@ class PatternDetector:
 
         nodes_to_check = set(list(self.graph.nodes())[:50])
         for cycle in cycles:
-            if len(cycle) >= min_hops and cycle[0] in nodes_to_check:
-                if self._check_cycle_amounts_fast(cycle):
-                    pattern = {
-                        'source': cycle[0],
-                        'cycle': cycle,
-                        'length': len(cycle),
-                        'pattern_type': 'round_tripping'
-                    }
-                    round_trips.append(pattern)
-                    if len(round_trips) >= 20:
-                        break
+            try:
+                if len(cycle) >= min_hops and cycle[0] in nodes_to_check:
+                    if self._check_cycle_amounts_fast(cycle):
+                        pattern = {
+                            'source': cycle[0],
+                            'cycle': cycle,
+                            'length': len(cycle),
+                            'pattern_type': 'round_tripping'
+                        }
+                        round_trips.append(pattern)
+                        if len(round_trips) >= 20:
+                            break
+            except Exception:
+                continue
 
         return round_trips
     
     def _check_cycle_amounts_fast(self, cycle):
         """Fast check for cycle amounts"""
-        amounts = []
-        for i in range(len(cycle)):
-            from_node = cycle[i]
-            to_node = cycle[(i+1) % len(cycle)]
-            edge_data = self.graph.get_edge_data(from_node, to_node)
-            if edge_data:
-                if 'amount' in edge_data:
-                    amount = edge_data['amount']
-                elif isinstance(edge_data, dict) and len(edge_data) > 0:
-                    first_val = list(edge_data.values())[0]
-                    if isinstance(first_val, dict):
-                        amount = first_val.get('amount', 0)
+        try:
+            amounts = []
+            for i in range(len(cycle)):
+                from_node = cycle[i]
+                to_node = cycle[(i+1) % len(cycle)]
+                edge_data = self.graph.get_edge_data(from_node, to_node)
+                if edge_data:
+                    if isinstance(edge_data, dict):
+                        if 'amount' in edge_data:
+                            amount = edge_data['amount']
+                        elif len(edge_data) > 0:
+                            first_val = list(edge_data.values())[0]
+                            amount = first_val.get('amount', 0) if isinstance(first_val, dict) else first_val
+                        else:
+                            amount = 0
                     else:
-                        amount = first_val
-                else:
-                    amount = 0
-                amounts.append(amount)
-        
-        if len(amounts) < 2:
-            return False
-        
-        mean_amount = float(np.mean(amounts))
-        if mean_amount == 0:
-            return False
+                        amount = 0
+                    amounts.append(amount)
             
-        for amount in amounts[:5]:  # Check first 5 only
-            if abs(amount - mean_amount) / mean_amount > 0.3:
+            if len(amounts) < 2:
                 return False
-        
-        return True
+            
+            mean_amount = float(np.mean(amounts))
+            if mean_amount == 0:
+                return False
+                
+            for amount in amounts[:5]:  # Check first 5 only
+                if abs(amount - mean_amount) / mean_amount > 0.3:
+                    return False
+            
+            return True
+        except Exception:
+            return False
     
     def get_all_patterns(self):
         """Detect all fraud patterns (optimized)"""
